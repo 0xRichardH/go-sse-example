@@ -12,7 +12,8 @@ func main() {
 	broker := sse.NewServer()
 
 	// go stream.NewCoinCapClient(broker)
-	go stream.NewStreamClient(broker)
+	streamClient := stream.NewStreamClient(broker)
+	go streamClient.Dial()
 
-	log.Fatal("HTTP server error: ", http.ListenAndServe("localhost:8081", broker))
+	log.Fatal("HTTP server error: ", http.ListenAndServe("localhost:8088", broker))
 }

@@ -24,12 +24,10 @@ func NewStreamClient(broker *sse.Broker) (s *Stream) {
 		broker: broker,
 	}
 
-	s.dial()
-
 	return
 }
 
-func (s *Stream) dial() {
+func (s *Stream) Dial() {
 	client, _, err := websocket.DefaultDialer.Dial(s.url.String(), nil)
 	if err != nil {
 		log.Fatal("dial:", err)
@@ -74,6 +72,7 @@ func (s *Stream) dial() {
 			return
 		}
 	}
+
 }
 
 func requestTimeStream(c *websocket.Conn) {
