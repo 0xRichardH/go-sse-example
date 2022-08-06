@@ -5,20 +5,23 @@ import (
 	"net/url"
 
 	"github.com/gorilla/websocket"
+	"os"
+	"os/signal"
+	"richard/go-sse-demo/internal/sse"
 )
 
 type Stream struct {
-	url         url.URL
-	MessageChan chan []byte
+	url    url.URL
+	broker *sse.Broker
 }
 
-func NewStreamClient() (s *Stream) {
+func NewStreamClient(broker *sse.Broker) (s *Stream) {
 	u := url.URL{Scheme: "ws", Host: "localhost:8080", Path: "bot"}
 	log.Printf("connecting to %s", u.String())
 
 	s = &Stream{
-		url:         u,
-		MessageChan: make(chan []byte, 1),
+		url:    u,
+		broker: broker,
 	}
 
 	s.dial()
@@ -34,19 +37,43 @@ func (s *Stream) dial() {
 
 	defer client.Close()
 
+	interrupt := make(chan os.Signal, 1)
+	signal.Notify(interrupt, os.Interrupt)
+	done := make(chan struct{})
 	go func() {
+		defer close(done)
 		for {
 			_, message, err := client.ReadMessage()
 			if err != nil {
 				log.Println("read:", err)
-				break
+				return
 			}
 			log.Printf("recv: %s", message)
-			s.MessageChan <- message
+			s.broker.Notifier <- message
 		}
 	}()
 
 	requestTimeStream(client)
+
+	for {
+		select {
+		case <-done:
+			return
+		case <-interrupt:
+			log.Println("interrupt")
+			err := client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+			if err != nil {
+				log.Println("write close:", err)
+				return
+			}
+
+			select {
+			case <-done:
+			}
+
+			return
+		}
+	}
 }
 
 func requestTimeStream(c *websocket.Conn) {

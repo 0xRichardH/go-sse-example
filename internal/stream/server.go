@@ -27,14 +27,17 @@ func (s *Streamer) ServeWebSocket(w http.ResponseWriter, r *http.Request) {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
 			log.Println("read:", err)
-			break
+			return
 		}
 		log.Printf("recv: %s", message)
 
-		err = writeMessage(conn, string(message))
-		if err != nil {
-			log.Println("write:", err)
-			break
+		for {
+			time.Sleep(time.Second * 2)
+			err = writeMessage(conn, string(message))
+			if err != nil {
+				log.Println("write:", err)
+				return
+			}
 		}
 	}
 }
@@ -49,12 +52,6 @@ func writeMessage(conn *websocket.Conn, message string) (err error) {
 	default:
 		writeMessage = "Do I know you?"
 	}
-	for {
-		time.Sleep(time.Second * 2)
-		err = conn.WriteMessage(websocket.TextMessage, []byte(writeMessage))
-		if err != nil {
-			break
-		}
-	}
+	err = conn.WriteMessage(websocket.TextMessage, []byte(writeMessage))
 	return
 }
