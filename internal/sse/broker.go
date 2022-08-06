@@ -23,7 +23,7 @@ func NewServer() (broker *Broker) {
 
 	go broker.listen()
 
-	return broker
+	return
 }
 
 func (broker *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
