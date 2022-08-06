@@ -10,7 +10,8 @@ import (
 
 func main() {
 	broker := sse.NewServer()
-	coincap := stream.NewCoinCapClient()
+	// coincap := stream.NewCoinCapClient()
+	streamClient := stream.NewStreamClient()
 
 	// go func() {
 	// 	for {
@@ -21,9 +22,14 @@ func main() {
 	// 	}
 	// }()
 
+	// go func() {
+	// 	message := <-coincap.TradeStream
+	// 	log.Println("Receiving trade stream.")
+	// 	broker.Notifier <- message
+	// }()
+
 	go func() {
-		message := <-coincap.TradeStream
-		log.Println("Receiving trade stream.")
+		message := <-streamClient.MessageChan
 		broker.Notifier <- message
 	}()
 
