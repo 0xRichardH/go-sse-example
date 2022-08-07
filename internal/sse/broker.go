@@ -1,6 +1,7 @@
 package sse
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
@@ -13,7 +14,7 @@ type Broker struct {
 	clients        map[chan []byte]bool
 }
 
-func NewServer() (broker *Broker) {
+func NewServer(ctx context.Context) (broker *Broker) {
 	broker = &Broker{
 		Notifier:       make(chan []byte, 1),
 		newClients:     make(chan chan []byte),
@@ -21,7 +22,7 @@ func NewServer() (broker *Broker) {
 		clients:        make(map[chan []byte]bool),
 	}
 
-	go broker.listen()
+	go broker.listen(ctx)
 
 	return
 }
@@ -59,7 +60,7 @@ func (broker *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	}
 }
 
-func (broker *Broker) listen() {
+func (broker *Broker) listen(ctx context.Context) {
 	for {
 		select {
 		case client := <-broker.newClients:
@@ -74,6 +75,11 @@ func (broker *Broker) listen() {
 			for client := range broker.clients {
 				client <- event
 			}
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				log.Println("ctx:", err)
+			}
+			return
 		}
 	}
 }

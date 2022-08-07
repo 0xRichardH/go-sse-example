@@ -1,13 +1,13 @@
 package stream
 
 import (
+	"context"
 	"log"
 	"net/url"
 
-	"github.com/gorilla/websocket"
-	"os"
-	"os/signal"
 	"richard/go-sse-demo/internal/sse"
+
+	"github.com/gorilla/websocket"
 )
 
 type Stream struct {
@@ -27,7 +27,7 @@ func NewStreamClient(broker *sse.Broker) (s *Stream) {
 	return
 }
 
-func (s *Stream) Dial() {
+func (s *Stream) Dial(ctx context.Context) {
 	client, _, err := websocket.DefaultDialer.Dial(s.url.String(), nil)
 	if err != nil {
 		log.Fatal("dial:", err)
@@ -35,11 +35,9 @@ func (s *Stream) Dial() {
 
 	defer client.Close()
 
-	interrupt := make(chan os.Signal, 1)
-	signal.Notify(interrupt, os.Interrupt)
-	done := make(chan struct{})
+	ctx, cancelCtx := context.WithCancel(ctx)
 	go func() {
-		defer close(done)
+		defer cancelCtx()
 		for {
 			_, message, err := client.ReadMessage()
 			if err != nil {
@@ -55,20 +53,15 @@ func (s *Stream) Dial() {
 
 	for {
 		select {
-		case <-done:
-			return
-		case <-interrupt:
-			log.Println("interrupt")
+		case <-ctx.Done():
+			if err := ctx.Err(); err != nil {
+				log.Println("ctx:", err)
+			}
 			err := client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
 				log.Println("write close:", err)
 				return
 			}
-
-			select {
-			case <-done:
-			}
-
 			return
 		}
 	}

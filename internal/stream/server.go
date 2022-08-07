@@ -3,9 +3,9 @@ package stream
 import (
 	"log"
 	"net/http"
+	"time"
 
 	"github.com/gorilla/websocket"
-	"time"
 )
 
 type Streamer struct {
