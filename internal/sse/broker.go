@@ -27,6 +27,8 @@ func NewServer(ctx context.Context) (broker *Broker) {
 	return
 }
 
+var _ http.Handler = (*Broker)(nil)
+
 func (broker *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	flusher, ok := w.(http.Flusher)
 
