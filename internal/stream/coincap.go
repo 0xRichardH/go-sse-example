@@ -46,7 +46,7 @@ func (c *CoinCap) dial() {
 		for {
 			_, message, err := client.ReadMessage()
 			if err != nil {
-				log.Println("read:", err)
+				log.Fatal("read:", err)
 				return
 			}
 			// log.Printf("recv: %s", message)
@@ -59,10 +59,10 @@ func (c *CoinCap) dial() {
 		case <-done:
 			return
 		case <-interrupt:
-			log.Println("interrupt")
+			log.Fatal("interrupt")
 			err := client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 			if err != nil {
-				log.Println("write close:", err)
+				log.Fatal("write close:", err)
 				return
 			}
 

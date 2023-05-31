@@ -26,7 +26,7 @@ func (s *Streamer) ServeWebSocket(w http.ResponseWriter, r *http.Request) {
 	for {
 		_, message, err := conn.ReadMessage()
 		if err != nil {
-			log.Println("read:", err)
+			log.Fatal("read:", err)
 			return
 		}
 		log.Printf("recv: %s", message)
@@ -35,7 +35,7 @@ func (s *Streamer) ServeWebSocket(w http.ResponseWriter, r *http.Request) {
 			time.Sleep(time.Second * 2)
 			err = writeMessage(conn, string(message))
 			if err != nil {
-				log.Println("write:", err)
+				log.Fatal("write:", err)
 				return
 			}
 		}

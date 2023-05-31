@@ -41,7 +41,7 @@ func (s *Stream) Dial(ctx context.Context) {
 		for {
 			_, message, err := client.ReadMessage()
 			if err != nil {
-				log.Println("read:", err)
+				log.Fatal("read:", err)
 				return
 			}
 			log.Printf("recv: %s", message)
@@ -53,17 +53,17 @@ func (s *Stream) Dial(ctx context.Context) {
 
 	<-ctx.Done()
 	if err := ctx.Err(); err != nil {
-		log.Println("ctx:", err)
+		log.Fatal("ctx:", err)
 	}
 	err = client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
 	if err != nil {
-		log.Println("write close:", err)
+		log.Fatal("write close:", err)
 	}
 }
 
 func requestTimeStream(c *websocket.Conn) {
 	err := c.WriteMessage(websocket.TextMessage, []byte("time"))
 	if err != nil {
-		log.Println("write:", err)
+		log.Fatal("write:", err)
 	}
 }

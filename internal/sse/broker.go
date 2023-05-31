@@ -55,7 +55,7 @@ func (broker *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	for {
 		select {
 		case <-ctx.Done():
-			fmt.Println("client disconnected.")
+			log.Println("client disconnected.")
 			return
 		default:
 			fmt.Fprintf(w, "data: %s\n\n", <-messageChan)

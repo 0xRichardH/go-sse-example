@@ -9,3 +9,8 @@ go run ./cmd/stream/main.go
 ```
 go run ./cmd/main.go
 ```
+
+- Test the SSE connections
+```
+curl localhost:3000
+```
