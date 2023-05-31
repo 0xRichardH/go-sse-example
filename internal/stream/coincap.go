@@ -66,10 +66,7 @@ func (c *CoinCap) dial() {
 				return
 			}
 
-			select {
-			case <-done:
-			}
-
+			<-done
 			return
 		}
 	}

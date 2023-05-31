@@ -27,7 +27,11 @@ func main() {
 	streamClient := stream.NewStreamClient(broker)
 	go streamClient.Dial(ctx)
 
-	go server.ListenAndServe()
+	go func() {
+		if err := server.ListenAndServe(); err != nil {
+			fmt.Println(err)
+		}
+	}()
 
 	<-ctx.Done()
 

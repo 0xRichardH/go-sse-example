@@ -51,21 +51,14 @@ func (s *Stream) Dial(ctx context.Context) {
 
 	requestTimeStream(client)
 
-	for {
-		select {
-		case <-ctx.Done():
-			if err := ctx.Err(); err != nil {
-				log.Println("ctx:", err)
-			}
-			err := client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
-			if err != nil {
-				log.Println("write close:", err)
-				return
-			}
-			return
-		}
+	<-ctx.Done()
+	if err := ctx.Err(); err != nil {
+		log.Println("ctx:", err)
 	}
-
+	err = client.WriteMessage(websocket.CloseMessage, websocket.FormatCloseMessage(websocket.CloseNormalClosure, ""))
+	if err != nil {
+		log.Println("write close:", err)
+	}
 }
 
 func requestTimeStream(c *websocket.Conn) {

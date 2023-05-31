@@ -37,6 +37,8 @@ func (broker *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
+	ctx := r.Context()
+
 	// Set the headers related to event streaming.
 	w.Header().Set("Content-Type", "text/event-stream")
 	w.Header().Set("Cache-Control", "no-cache")
@@ -50,15 +52,15 @@ func (broker *Broker) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 		broker.closingClients <- messageChan
 	}()
 
-	notify := w.(http.CloseNotifier).CloseNotify()
-	go func() {
-		<-notify
-		broker.closingClients <- messageChan
-	}()
-
 	for {
-		fmt.Fprintf(w, "data: %s\n\n", <-messageChan)
-		flusher.Flush()
+		select {
+		case <-ctx.Done():
+			fmt.Println("client disconnected.")
+			return
+		default:
+			fmt.Fprintf(w, "data: %s\n\n", <-messageChan)
+			flusher.Flush()
+		}
 	}
 }
 
